@@ -1,11 +1,15 @@
 import type { Address } from 'viem'
 
-export const DONEDOT_ADDRESS = import.meta.env
-  .VITE_DONEDOT_CONTRACT_ADDRESS as Address
+const configuredAddress = import.meta.env.VITE_DONEDOT_CONTRACT_ADDRESS
+const zeroContractAddress = '0x0000000000000000000000000000000000000000'
 
 export const isContractConfigured =
-  /^0x[a-fA-F0-9]{40}$/.test(DONEDOT_ADDRESS) &&
-  DONEDOT_ADDRESS !== '0x0000000000000000000000000000000000000000'
+  /^0x[a-fA-F0-9]{40}$/.test(configuredAddress ?? '') &&
+  configuredAddress !== zeroContractAddress
+
+export const DONEDOT_ADDRESS = (
+  isContractConfigured ? configuredAddress : zeroContractAddress
+) as Address
 
 export const doneDotAbi = [
   {

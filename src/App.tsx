@@ -29,6 +29,7 @@ import {
   doneDotAbi,
   isContractConfigured,
 } from './config/contract'
+import { DATA_SUFFIX } from './config/wagmi'
 
 const actions = [
   {
@@ -112,14 +113,13 @@ export function App() {
     isPending: isWriting,
     writeContract,
   } = useWriteContract()
-  const {
-    isLoading: isConfirming,
-    isSuccess,
-  } = useWaitForTransactionReceipt({
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   })
 
   const userAddress = address ?? zeroAddress
+
   const {
     data: statsData,
     isLoading: isStatsLoading,
@@ -133,10 +133,8 @@ export function App() {
       enabled: isContractConfigured && isConnected,
     },
   })
-  const {
-    data: totalDotsData,
-    refetch: refetchTotalDots,
-  } = useReadContract({
+
+  const { data: totalDotsData, refetch: refetchTotalDots } = useReadContract({
     address: DONEDOT_ADDRESS,
     abi: doneDotAbi,
     functionName: 'totalDots',
@@ -156,15 +154,19 @@ export function App() {
   const total = Number(stats[0])
   const lastStampedAt = Number(stats[1])
   const lastKind = Number(stats[2])
+
   const counts = actions.map((action, index) => ({
     ...action,
     count: Number(stats[index + 3] ?? 0n),
   }))
-  const selectedAction = actions.find((action) => action.id === selectedKind) ?? actions[0]
+
+  const selectedAction =
+    actions.find((action) => action.id === selectedKind) ?? actions[0]
   const SelectedIcon = selectedAction.icon
   const lastAction = total > 0 ? actions[lastKind]?.label ?? 'Unknown' : 'None'
   const globalTotal = Number(totalDotsData ?? 0n)
   const needsSwitch = isConnected && chainId !== base.id
+
   const canStamp =
     isContractConfigured &&
     isConnected &&
@@ -175,6 +177,7 @@ export function App() {
   const primaryConnector = connectors.find(
     (connector) => connector.id === 'baseAccount',
   )
+
   const visibleConnectors = useMemo(() => {
     if (primaryConnector) {
       return [
@@ -195,6 +198,7 @@ export function App() {
       functionName: 'stamp',
       args: [selectedKind],
       chainId: base.id,
+      dataSuffix: DATA_SUFFIX,
     })
   }
 
@@ -260,6 +264,7 @@ export function App() {
                   ? shortAddress(DONEDOT_ADDRESS)
                   : 'not configured'}
               </code>
+
               {isContractConfigured && (
                 <button
                   type="button"
@@ -269,6 +274,7 @@ export function App() {
                   <Copy size={15} />
                 </button>
               )}
+
               {copied && <small>Copied</small>}
             </div>
           </div>
@@ -287,6 +293,7 @@ export function App() {
                 <span>Selected dot</span>
                 <strong>{selectedAction.label}</strong>
               </div>
+
               <SelectedIcon
                 className="selected-icon"
                 style={{ color: selectedAction.color }}
@@ -357,9 +364,7 @@ export function App() {
               </div>
             )}
 
-            {writeError && (
-              <div className="error-line">{walletError}</div>
-            )}
+            {writeError && <div className="error-line">{walletError}</div>}
           </div>
         </div>
       </section>
@@ -369,11 +374,13 @@ export function App() {
           <span>Your dots</span>
           <strong>{isStatsLoading ? '...' : total}</strong>
         </div>
+
         <div className="metric">
           <span>Last dot</span>
           <strong>{lastAction}</strong>
           <small>{formatDate(lastStampedAt)}</small>
         </div>
+
         <div className="metric">
           <span>All dots</span>
           <strong>{globalTotal}</strong>
